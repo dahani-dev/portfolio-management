@@ -70,7 +70,7 @@ const Page = () => {
                 htmlFor="username"
                 className="block mb-2 text-sm font-medium text-white"
               >
-                Your username
+                Username
               </label>
               <input
                 type="text"
