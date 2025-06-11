@@ -1,6 +1,59 @@
-import React from "react";
+"use client";
 
-const page = () => {
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod/v4";
+
+// create schema of fields
+const loginSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, "length must be at least 3 characters long")
+    .max(20, "length must be at most 20 characters long")
+    .nonempty("User name is required"),
+  password: z
+    .string()
+    .trim()
+    .min(8, "length must be at least 8 characters long")
+    .nonempty("Password is required"),
+});
+
+// create a type for useForm
+// z.infer<typeof loginSchema> is a utility from Zod that automatically creates a TypeScript type based on your schema.
+type FormFields = z.infer<typeof loginSchema>;
+
+const Page = () => {
+  // react use form hook:
+  // register: thats save the value from inputs
+  // handleSubmit: thats do the same functionality of native handleSubmit on react
+  // reset: thats will be clear all inputs
+  // formState: thats return the state of form like isSubmitting or errors ...
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, errors },
+  } = useForm<FormFields>({
+    // It tells React Hook Form to validate the form using your Zod schema.
+    resolver: zodResolver(loginSchema),
+  });
+
+  const submitForm: SubmitHandler<FormFields> = async (data) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
+    reset();
+    console.log(data);
+  };
+
+  // const result = loginSchema.safeParse(admin);
+  // if (!result.success) {
+  //   console.log(result.error);
+  // } else {
+  //   console.log(result.data);
+  // }
+
   return (
     <section className="w-full h-[100vh] flex justify-center items-center px-10">
       <div className="w-full rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0 bg-gray-800 border-gray-700">
@@ -8,7 +61,10 @@ const page = () => {
           <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
             Sign in
           </h1>
-          <form className="space-y-4 md:space-y-6">
+          <form
+            className="space-y-4 md:space-y-6"
+            onSubmit={handleSubmit(submitForm)}
+          >
             <div>
               <label
                 htmlFor="username"
@@ -18,12 +74,14 @@ const page = () => {
               </label>
               <input
                 type="text"
-                name="username"
                 id="username"
                 className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
                 placeholder="ex: carl_johnson"
-                required
+                {...register("username")}
               />
+              <p className="mb-1 text-red-500 text-sm">
+                {errors.username?.message}
+              </p>
             </div>
             <div>
               <label
@@ -34,18 +92,21 @@ const page = () => {
               </label>
               <input
                 type="password"
-                name="password"
                 id="password"
                 placeholder="••••••••"
                 className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                required
+                {...register("password")}
               />
+              <p className="mb-1 text-red-500 text-sm">
+                {errors.password?.message}
+              </p>
             </div>
             <button
               type="submit"
-              className="w-full text-white bg-blue-600 cursor-pointer hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              className="w-full text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              disabled={isSubmitting}
             >
-              Sign in
+              {isSubmitting ? "Loading..." : "Sign in"}
             </button>
           </form>
         </div>
@@ -54,4 +115,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
