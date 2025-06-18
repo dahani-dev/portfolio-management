@@ -3,6 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod/v4";
+import axios, { isAxiosError } from "axios";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 // create schema of fields
 const loginSchema = z.object({
@@ -24,6 +27,8 @@ const loginSchema = z.object({
 type FormFields = z.infer<typeof loginSchema>;
 
 const Page = () => {
+  const router = useRouter();
+
   // react use form hook:
   // register: thats save the value from inputs
   // handleSubmit: thats do the same functionality of native handleSubmit on react
@@ -40,19 +45,23 @@ const Page = () => {
   });
 
   const submitForm: SubmitHandler<FormFields> = async (data) => {
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
-    reset();
-    console.log(data);
+    try {
+      const response = await axios.post("http://localhost:3000/login", {
+        username: data.username,
+        password: data.password,
+      });
+      localStorage.setItem("token", response.data.accessToken);
+      toast.success(response.data.message);
+      reset();
+      router.push("/dashboard");
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
   };
-
-  // const result = loginSchema.safeParse(admin);
-  // if (!result.success) {
-  //   console.log(result.error);
-  // } else {
-  //   console.log(result.data);
-  // }
 
   return (
     <section className="w-full h-[100vh] flex justify-center items-center px-10">
