@@ -9,6 +9,7 @@ import { MdLogout } from "react-icons/md";
 import axios, { isAxiosError } from "axios";
 import Image from "next/image";
 import jwt_decode from "jwt-decode";
+import UpdateForm from "../components/updateForm";
 
 type Project = {
   id: number;
@@ -34,7 +35,8 @@ const Dashboard = () => {
   const [token, setToken] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [username, setUsername] = useState<string>("");
-  const [showUpdateForm, setShowUpdateForm] = useState<boolean>(true);
+  const [showUpdateForm, setShowUpdateForm] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     // check if we have a token
@@ -174,6 +176,7 @@ const Dashboard = () => {
                       className="bg-blue-600 hover:bg-blue-700 p-2 rounded cursor-pointer"
                       onClick={() => {
                         setShowUpdateForm(true);
+                        setSelectedProject(item);
                       }}
                     >
                       <MdEdit />
@@ -194,139 +197,11 @@ const Dashboard = () => {
           })
         )}
       </section>
-      {showUpdateForm && (
-        <section className="flex justify-center items-center px-10">
-          <div className="w-full rounded-lg shadow bg-gray-800 border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
-                Update project
-              </h1>
-              <form
-                className="space-y-4 md:space-y-6"
-                // onSubmit={handleSubmit(submitForm)}
-              >
-                <div className="grid grid-cols-2 gap-5 h-[400px]">
-                  <div className="flex flex-col gap-5 h-full">
-                    <div>
-                      <label
-                        htmlFor="title"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Title
-                      </label>
-                      <input
-                        type="text"
-                        id="title"
-                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                        placeholder="ex: Snacly"
-                      />
-                    </div>
-
-                    <div className="flex flex-col flex-1">
-                      <label
-                        htmlFor="description"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Description
-                      </label>
-                      <textarea
-                        id="description"
-                        placeholder="Sackly is a food delivery ..."
-                        className="bg-gray-700 border rounded-lg w-full h-full p-2.5 outline-none border-none"
-                        // {...register("password")}
-                      ></textarea>
-                      <p className="mb-1 text-red-500 text-sm">
-                        {/* {errors.password?.message} */}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-5">
-                    <div>
-                      <label
-                        htmlFor="image"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Image
-                      </label>
-                      <input
-                        type="file"
-                        id="image"
-                        placeholder="Image of project"
-                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                        // {...register("password")}
-                      />
-                      <p className="mb-1 text-red-500 text-sm">
-                        {/* {errors.password?.message} */}
-                      </p>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="category"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Category
-                      </label>
-                      <input
-                        type="text"
-                        id="category"
-                        placeholder="Category of project"
-                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                        // {...register("password")}
-                      />
-                      <p className="mb-1 text-red-500 text-sm">
-                        {/* {errors.password?.message} */}
-                      </p>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="link"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Link
-                      </label>
-                      <input
-                        type="text"
-                        id="link"
-                        placeholder="Link of project"
-                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                        // {...register("password")}
-                      />
-                      <p className="mb-1 text-red-500 text-sm">
-                        {/* {errors.password?.message} */}
-                      </p>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="github"
-                        className="block mb-2 text-sm font-medium text-white"
-                      >
-                        Github
-                      </label>
-                      <input
-                        type="text"
-                        id="github"
-                        placeholder="Github repo of project"
-                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
-                        // {...register("password")}
-                      />
-                      <p className="mb-1 text-red-500 text-sm">
-                        {/* {errors.password?.message} */}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                  // disabled={isSubmitting}
-                >
-                  {/* {isSubmitting ? "Loading..." : "Sign in"} */}
-                  Update
-                </button>
-              </form>
-            </div>
-          </div>
-        </section>
+      {showUpdateForm && selectedProject && (
+        <UpdateForm
+          setShowUpdateForm={setShowUpdateForm}
+          project={selectedProject}
+        />
       )}
     </div>
   );
