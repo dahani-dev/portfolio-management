@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [token, setToken] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [username, setUsername] = useState<string>("");
+  const [showUpdateForm, setShowUpdateForm] = useState<boolean>(true);
 
   useEffect(() => {
     // check if we have a token
@@ -135,45 +136,198 @@ const Dashboard = () => {
           </div>
         </div>
         <hr className="h-px my-8  border-0 bg-gray-700" />
+        <ul className="grid grid-cols-7 gap-4 mb-6 items-center text-center">
+          <li>Tiltle</li>
+          <li>Description</li>
+          <li>Image</li>
+          <li>Category</li>
+          <li>Link</li>
+          <li>Github</li>
+          <li>Action</li>
+        </ul>
+        <hr className="h-px my-8  border-0 bg-gray-700" />
         {projects.length <= 0 ? (
           <p className="text-2xl text-red-500">
             There are no projects currently.
           </p>
         ) : (
-          projects.map((item) => {
+          projects.map((item, index) => {
             return (
-              <ul
-                key={item.id}
-                className="grid grid-cols-8 gap-4 mb-6 items-center"
-              >
-                <li className="">{item.title}</li>
-                <li className="">{item.description}</li>
-                <li>
-                  <Image
-                    src={`${server}/uploads/${item.image}`}
-                    alt={item.title}
-                    width={150}
-                    height={150}
-                    className="object-cover"
-                  />
-                </li>
-                <li>{item.category}</li>
-                <li>{item.link}</li>
-                <li>{item.github}</li>
-                <button className="bg-blue-600 hover:bg-blue-700 py-2 rounded cursor-pointer flex items-center justify-evenly">
-                  Update <MdEdit />
-                </button>
-                <button
-                  className="bg-red-600 hover:bg-red-700 py-2 rounded cursor-pointer flex items-center justify-evenly"
-                  onClick={() => deleteProject(item.id)}
-                >
-                  Delete <MdDelete />
-                </button>
-              </ul>
+              <div key={item.id}>
+                <ul className="grid grid-cols-7 gap-4 mb-6 items-center text-center">
+                  <li className="">{item.title}</li>
+                  <li className="">{item.description}</li>
+                  <li className="flex justify-center items-center">
+                    <Image
+                      src={`${server}/uploads/${item.image}`}
+                      alt={item.title}
+                      width={100}
+                      height={100}
+                      className="object-cover rounded"
+                    />
+                  </li>
+                  <li>{item.category}</li>
+                  <li>{item.link}</li>
+                  <li>{item.github}</li>
+                  <li className="flex items-center gap-5 justify-center">
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 p-2 rounded cursor-pointer"
+                      onClick={() => {
+                        setShowUpdateForm(true);
+                      }}
+                    >
+                      <MdEdit />
+                    </button>
+                    <button
+                      className="bg-red-600 hover:bg-red-700 p-2 rounded cursor-pointer"
+                      onClick={() => deleteProject(item.id)}
+                    >
+                      <MdDelete />
+                    </button>
+                  </li>
+                </ul>
+                {index !== projects.length - 1 && (
+                  <hr className="h-px my-8 border-0 bg-gray-700" />
+                )}
+              </div>
             );
           })
         )}
       </section>
+      {showUpdateForm && (
+        <section className="flex justify-center items-center px-10">
+          <div className="w-full rounded-lg shadow bg-gray-800 border-gray-700">
+            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+              <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
+                Update project
+              </h1>
+              <form
+                className="space-y-4 md:space-y-6"
+                // onSubmit={handleSubmit(submitForm)}
+              >
+                <div className="grid grid-cols-2 gap-5 h-[400px]">
+                  <div className="flex flex-col gap-5 h-full">
+                    <div>
+                      <label
+                        htmlFor="title"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        id="title"
+                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                        placeholder="ex: Snacly"
+                      />
+                    </div>
+
+                    <div className="flex flex-col flex-1">
+                      <label
+                        htmlFor="description"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Description
+                      </label>
+                      <textarea
+                        id="description"
+                        placeholder="Sackly is a food delivery ..."
+                        className="bg-gray-700 border rounded-lg w-full h-full p-2.5 outline-none border-none"
+                        // {...register("password")}
+                      ></textarea>
+                      <p className="mb-1 text-red-500 text-sm">
+                        {/* {errors.password?.message} */}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-5">
+                    <div>
+                      <label
+                        htmlFor="image"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Image
+                      </label>
+                      <input
+                        type="file"
+                        id="image"
+                        placeholder="Image of project"
+                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                        // {...register("password")}
+                      />
+                      <p className="mb-1 text-red-500 text-sm">
+                        {/* {errors.password?.message} */}
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="category"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Category
+                      </label>
+                      <input
+                        type="text"
+                        id="category"
+                        placeholder="Category of project"
+                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                        // {...register("password")}
+                      />
+                      <p className="mb-1 text-red-500 text-sm">
+                        {/* {errors.password?.message} */}
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="link"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Link
+                      </label>
+                      <input
+                        type="text"
+                        id="link"
+                        placeholder="Link of project"
+                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                        // {...register("password")}
+                      />
+                      <p className="mb-1 text-red-500 text-sm">
+                        {/* {errors.password?.message} */}
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="github"
+                        className="block mb-2 text-sm font-medium text-white"
+                      >
+                        Github
+                      </label>
+                      <input
+                        type="text"
+                        id="github"
+                        placeholder="Github repo of project"
+                        className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                        // {...register("password")}
+                      />
+                      <p className="mb-1 text-red-500 text-sm">
+                        {/* {errors.password?.message} */}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                  // disabled={isSubmitting}
+                >
+                  {/* {isSubmitting ? "Loading..." : "Sign in"} */}
+                  Update
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };
