@@ -46,10 +46,13 @@ const Page = () => {
 
   const submitForm: SubmitHandler<FormFields> = async (data) => {
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        username: data.username,
-        password: data.password,
-      });
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_SERVER}/login`,
+        {
+          username: data.username,
+          password: data.password,
+        }
+      );
       localStorage.setItem("token", response.data.accessToken);
       toast.success(response.data.message);
       reset();

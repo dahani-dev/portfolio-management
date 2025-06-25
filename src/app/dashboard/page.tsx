@@ -27,9 +27,6 @@ type JwtPayload = {
 };
 
 const Dashboard = () => {
-  // server of backen
-  const server: string = "http://localhost:3000";
-
   const router = useRouter();
 
   const [token, setToken] = useState<string | null>(null);
@@ -63,7 +60,7 @@ const Dashboard = () => {
 
     // get all projects
     axios
-      .get(`${server}/projects`)
+      .get(`${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects`)
       .then((response) => {
         setProjects(response.data.data);
       })
@@ -88,11 +85,14 @@ const Dashboard = () => {
       return;
     }
     try {
-      const response = await axios.delete(`${server}/projects/${id}`, {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      });
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects/${id}`,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
       toast.success(response.data.message);
       // get all projects but dont get the one who i delete
       setProjects((prevProjects) =>
@@ -161,7 +161,7 @@ const Dashboard = () => {
                   <li className="">{item.description}</li>
                   <li className="flex justify-center items-center">
                     <Image
-                      src={`${server}/uploads/${item.image}`}
+                      src={`${process.env.NEXT_PUBLIC_BACKEND_SERVER}/uploads/${item.image}`}
                       alt={item.title}
                       width={100}
                       height={100}
