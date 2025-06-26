@@ -10,6 +10,8 @@ import axios, { isAxiosError } from "axios";
 import Image from "next/image";
 import jwt_decode from "jwt-decode";
 import UpdateForm from "../components/updateForm";
+import DeleteConfirmation from "../components/deleteConfirmation";
+import Link from "next/link";
 
 type Project = {
   id: number;
@@ -32,6 +34,12 @@ const Dashboard = () => {
   const [token, setToken] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [username, setUsername] = useState<string>("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] =
+    useState<boolean>(false);
+  const [confirmationPromise, setConfirmationPromise] = useState<
+    ((confirmed: boolean) => void) | null
+  >(null);
+
   const [showUpdateForm, setShowUpdateForm] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
@@ -84,6 +92,14 @@ const Dashboard = () => {
       router.push("/");
       return;
     }
+    const confirmed = await new Promise<boolean>((resolve) => {
+      setConfirmationPromise(() => resolve);
+      setShowDeleteConfirmation(true);
+    });
+
+    if (!confirmed) {
+      return;
+    }
     try {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects/${id}`,
@@ -107,21 +123,33 @@ const Dashboard = () => {
     }
   };
 
+  // add the update project to list of projects
+  const handleProjectUpdate = (updatedProject: Project) => {
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === updatedProject.id ? updatedProject : project
+      )
+    );
+  };
+
   return (
     <div className="p-10">
       <section>
         <div className="flex items-center justify-between flex-wrap gap-10">
-          <h2 className="flex items-center gap-4 bg-orange-600 px-2 py-2 rounded">
-            Projects Dashboard
+          <Link
+            href={`/dashboard/add`}
+            className="flex items-center gap-4 bg-orange-600 px-2 py-2 rounded cursor-pointer transition hover:bg-orange-700"
+          >
+            Add New Project
             <FaClipboardList className="text-lg" />
-          </h2>
+          </Link>
           <div className="flex">
             <input
               type="text"
               className="bg-gray-700 border rounded-bl-[8px] rounded-tl-[8px] p-2.5 outline-none border-none"
               placeholder="Search for project"
             />
-            <button className="bg-orange-600 hover:bg-orange-700 px-6 py-2.5 rounded-br-[8px] rounded-tr-[8px] cursor-pointer">
+            <button className="bg-orange-600 hover:bg-orange-700 px-6 py-2.5 rounded-br-[8px] rounded-tr-[8px] cursor-pointer transition">
               Search
             </button>
           </div>
@@ -130,7 +158,7 @@ const Dashboard = () => {
               <FaUser className="text-blue-600 text-lg" /> {username}
             </div>
             <button
-              className="bg-red-600 hover:bg-red-700 py-2 px-2 rounded cursor-pointer flex items-center justify-evenly gap-2"
+              className="bg-red-600 hover:bg-red-700 py-2 px-2 rounded cursor-pointer flex items-center justify-evenly gap-2 transition"
               onClick={logout}
             >
               Logout <MdLogout />
@@ -173,7 +201,7 @@ const Dashboard = () => {
                   <li>{item.github}</li>
                   <li className="flex items-center gap-5 justify-center">
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 p-2 rounded cursor-pointer"
+                      className="bg-blue-600 hover:bg-blue-700 p-2 rounded cursor-pointer transition"
                       onClick={() => {
                         setShowUpdateForm(true);
                         setSelectedProject(item);
@@ -182,7 +210,7 @@ const Dashboard = () => {
                       <MdEdit />
                     </button>
                     <button
-                      className="bg-red-600 hover:bg-red-700 p-2 rounded cursor-pointer"
+                      className="bg-red-600 hover:bg-red-700 p-2 rounded cursor-pointer transition"
                       onClick={() => deleteProject(item.id)}
                     >
                       <MdDelete />
@@ -201,6 +229,15 @@ const Dashboard = () => {
         <UpdateForm
           setShowUpdateForm={setShowUpdateForm}
           project={selectedProject}
+          onProjectUpdated={handleProjectUpdate}
+        />
+      )}
+      {showDeleteConfirmation && confirmationPromise && (
+        <DeleteConfirmation
+          onConfirm={(confirmed) => {
+            setShowDeleteConfirmation(false);
+            confirmationPromise(confirmed);
+          }}
         />
       )}
     </div>

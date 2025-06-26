@@ -11,7 +11,7 @@ import { z } from "zod/v4";
 const updateSchema = z.object({
   title: z.string().max(100),
   description: z.string().max(500),
-  image: z.string(),
+  image: z.any(),
   category: z.string(),
   link: z.string().url(),
   github: z.string().url(),
@@ -31,13 +31,18 @@ type Project = {
   link: string;
   github: string;
 };
-// type of setShowUpdateForm props
+// type of UpdateFormProps props
 type UpdateFormProps = {
   setShowUpdateForm: React.Dispatch<React.SetStateAction<boolean>>;
   project: Project;
+  onProjectUpdated: (updatedProject: Project) => void;
 };
 
-const UpdateForm = ({ setShowUpdateForm, project }: UpdateFormProps) => {
+const UpdateForm = ({
+  setShowUpdateForm,
+  project,
+  onProjectUpdated,
+}: UpdateFormProps) => {
   const router = useRouter();
 
   // react use form hook:
@@ -63,19 +68,32 @@ const UpdateForm = ({ setShowUpdateForm, project }: UpdateFormProps) => {
       return;
     }
     try {
-      const response = await axios.patch(`localhost:3000/projects/${21}`, {
-        title: data.title,
-        description: data.description,
-        image: data.image,
-        category: data.category,
-        link: data.link,
-        github: data.github,
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      });
+      // using FormData() to get all values from inputs
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("link", data.link);
+      formData.append("github", data.github);
+      // handle the image file
+      const image = (data.image as FileList)?.[0];
+      if (image) {
+        formData.append("image", image);
+      }
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects/${project.id}`,
+        formData,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
       toast.success(response.data.message);
       reset();
+      setShowUpdateForm(false);
+      // send the updated project to dashbord
+      onProjectUpdated(response.data.updatedProject);
     } catch (error) {
       if (isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -85,8 +103,8 @@ const UpdateForm = ({ setShowUpdateForm, project }: UpdateFormProps) => {
     }
   };
   return (
-    <section className="bg-red-600 z-50 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-      <div className="w-full rounded-lg shadow bg-gray-800 border-gray-700">
+    <section className="flex justify-center items-center bg-black/50 w-full h-full z-50 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <div className="rounded-lg shadow bg-gray-800 border-gray-700">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold leading-tight tracking-tight md:text-2xl text-white">
@@ -162,7 +180,8 @@ const UpdateForm = ({ setShowUpdateForm, project }: UpdateFormProps) => {
                     {...register("image")}
                   />
                   <p className="mb-1 text-red-500 text-sm">
-                    {errors.image?.message}
+                    {typeof errors.image?.message === "string" &&
+                      errors.image.message}
                   </p>
                 </div>
                 <div>
