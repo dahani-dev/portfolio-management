@@ -96,12 +96,19 @@ const UpdateForm = ({
       onProjectUpdated(response.data.updatedProject);
     } catch (error) {
       if (isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          toast.error("Please Login");
+          router.push("/");
+        }
         toast.error(error.response?.data.message);
       } else {
         toast.error("Something went wrong");
       }
     }
   };
+
+  // category options
+  const categoryOptions = ["Web Development", "Mobile App"];
   return (
     <section className="flex justify-center items-center bg-black/50 w-full h-full z-50 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
       <div className="rounded-lg shadow bg-gray-800 border-gray-700">
@@ -191,14 +198,21 @@ const UpdateForm = ({
                   >
                     Category
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="category"
-                    placeholder="Category of project"
-                    className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                    className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none text-white"
                     {...register("category")}
-                    defaultValue={project.category}
-                  />
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select category
+                    </option>
+                    {categoryOptions.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                   <p className="mb-1 text-red-500 text-sm">
                     {errors.category?.message}
                   </p>

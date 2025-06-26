@@ -13,7 +13,7 @@ import { z } from "zod/v4";
 const projectSchema = z.object({
   title: z.string().max(100).nonempty(),
   description: z.string().max(500).nonempty(),
-  image: z.string().nonempty(),
+  image: z.any(),
   category: z.string().nonempty(),
   link: z.string().url().nonempty(),
   github: z.string().url().nonempty(),
@@ -43,16 +43,24 @@ const AddNewProject = () => {
       return;
     }
     try {
+      // using FormData() to get all values from inputs
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("link", data.link);
+      formData.append("github", data.github);
+      // handle the image file
+      const image = (data.image as FileList)?.[0];
+      if (image) {
+        formData.append("image", image);
+      } else {
+        toast.error("image file is required !");
+        return;
+      }
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects`,
-        {
-          title: data.title,
-          description: data.description,
-          image: data.image,
-          category: data.category,
-          link: data.link,
-          github: data.github,
-        },
+        formData,
         {
           headers: {
             Authorization: "Bearer " + token,
@@ -63,12 +71,19 @@ const AddNewProject = () => {
       reset();
     } catch (error) {
       if (isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          toast.error("Please Login");
+          router.push("/");
+        }
         toast.error(error.response?.data.message);
       } else {
         toast.error("Something went wrong");
       }
     }
   };
+
+  // category options
+  const categoryOptions = ["Web Development", "Mobile App"];
   return (
     <div className="p-10">
       <Link
@@ -152,13 +167,21 @@ const AddNewProject = () => {
                 >
                   Category
                 </label>
-                <input
-                  type="text"
+                <select
                   id="category"
-                  placeholder="Category of project"
-                  className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none"
+                  className="bg-gray-700 border rounded-lg w-full p-2.5 outline-none border-none text-white"
                   {...register("category")}
-                />
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Select category
+                  </option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
                 <p className="mb-1 text-red-500 text-sm">
                   {errors.category?.message}
                 </p>

@@ -43,6 +43,9 @@ const Dashboard = () => {
   const [showUpdateForm, setShowUpdateForm] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+
   useEffect(() => {
     // check if we have a token
     const storedToken = localStorage.getItem("token");
@@ -71,11 +74,28 @@ const Dashboard = () => {
       .get(`${process.env.NEXT_PUBLIC_BACKEND_SERVER}/projects`)
       .then((response) => {
         setProjects(response.data.data);
+        setAllProjects(response.data.data);
       })
       .catch((error) => {
         console.log(error);
       });
   }, [router]);
+
+  useEffect(() => {
+    // search a project
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim() === "") {
+        setProjects(allProjects);
+      } else {
+        const filtredProjects = allProjects.filter((project) =>
+          project.title.toLowerCase().includes(searchTerm.toLowerCase().trim())
+        );
+
+        setProjects(filtredProjects);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm, allProjects]);
 
   // logout
   const logout = () => {
@@ -116,6 +136,10 @@ const Dashboard = () => {
       );
     } catch (error) {
       if (isAxiosError(error)) {
+        if (error.response?.status === 500) {
+          toast.error("Please Login");
+          router.push("/");
+        }
         toast.error(error.response?.data.message);
       } else {
         toast.error("Something went wrong");
@@ -143,16 +167,15 @@ const Dashboard = () => {
             Add New Project
             <FaClipboardList className="text-lg" />
           </Link>
-          <div className="flex">
-            <input
-              type="text"
-              className="bg-gray-700 border rounded-bl-[8px] rounded-tl-[8px] p-2.5 outline-none border-none"
-              placeholder="Search for project"
-            />
-            <button className="bg-orange-600 hover:bg-orange-700 px-6 py-2.5 rounded-br-[8px] rounded-tr-[8px] cursor-pointer transition">
-              Search
-            </button>
-          </div>
+          <input
+            type="text"
+            className="bg-gray-700 border rounded p-2.5 outline-none border-none"
+            placeholder="Search for project by title"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+            }}
+          />
           <div className="flex gap-10">
             <div className="flex items-center gap-2">
               <FaUser className="text-blue-600 text-lg" /> {username}
@@ -185,8 +208,8 @@ const Dashboard = () => {
             return (
               <div key={item.id}>
                 <ul className="grid grid-cols-7 gap-4 mb-6 items-center text-center">
-                  <li className="">{item.title}</li>
-                  <li className="">{item.description}</li>
+                  <li className="break-all">{item.title}</li>
+                  <li className="break-all">{item.description}</li>
                   <li className="flex justify-center items-center">
                     <Image
                       src={`${process.env.NEXT_PUBLIC_BACKEND_SERVER}/uploads/${item.image}`}
@@ -196,9 +219,9 @@ const Dashboard = () => {
                       className="object-cover rounded"
                     />
                   </li>
-                  <li>{item.category}</li>
-                  <li>{item.link}</li>
-                  <li>{item.github}</li>
+                  <li className="break-all">{item.category}</li>
+                  <li className="break-all">{item.link}</li>
+                  <li className="break-all">{item.github}</li>
                   <li className="flex items-center gap-5 justify-center">
                     <button
                       className="bg-blue-600 hover:bg-blue-700 p-2 rounded cursor-pointer transition"
